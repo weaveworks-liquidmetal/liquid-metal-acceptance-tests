@@ -51,7 +51,7 @@ jobs:
     #   if: ${{ failure() }}
     #   with:
     #     slack_token: ${{ secrets.SLACK_TOKEN }}
-    #     message: "A Liquid Metal e2e test run failed :blob_sad: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here> and weep."
+    #     message: "A Liquid Metal Acceptance Test run failed :blob_sad: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here> and weep."
     #     channel: team-quick-silver
     #     color: red
     #     verbose: false
@@ -67,6 +67,7 @@ jobs:
         verbose: false
 
     - name: Cleanup project
+      if: ${{ failure() }}
       uses: weaveworks/metal-janitor-action@27a0594c5c92d85585b553fc0c5ef2a3de7bec95
       with:
         metal_auth_token: ${{ secrets.METAL_AUTH_TOKEN }}
