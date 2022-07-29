@@ -4,6 +4,8 @@ new_vars() {
 	local key=keys/lm-ed
 	local device="${DEVICE:=c3.small.x86}"
 	local device_count="${DEVICE_COUNT:=2}"
+	local flintlock_version="${FLINTLOCK_VERSION:=latest}"
+	local project_name="${PROJECT_NAME:=liquid-metal-acceptance-tests}"
 
 	dir="$(dirname "$(realpath "$0")")"
 
@@ -19,7 +21,9 @@ new_vars() {
 	# # put the count back afterwards
 	((device_count--))
 
-	rm keys/* && ssh-keygen -q -f "$key" -t ed25519 -N ""
+	mkdir keys || true
+	rm keys/* || true
+	ssh-keygen -q -f "$key" -t ed25519 -N ""
 	public_key=$(cat $key.pub)
 	private_key_path="$(dirname "$dir")/$key"
 
@@ -30,12 +34,16 @@ new_vars() {
 		--arg metro "$metro" \
 		--arg device "$device" \
 		--arg host_device_count "$device_count" \
+		--arg fl_version "$flintlock_version" \
+		--arg prj_name "$project_name" \
 		'.org_id = $org |
 		.metal_auth_token = $token |
 		.public_key = $pub_key |
 		.private_key_path = $priv_key |
 		.metro = $metro |
 		.host_device_count = $host_device_count |
+		.flintlock_version = $fl_version |
+		.project_name = $prj_name |
 		.server_type = $device' \
 		./terraform/terraform.tfvars.example.json > ./terraform/terraform.tfvars.json
 }
