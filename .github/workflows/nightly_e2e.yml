@@ -9,7 +9,6 @@ on:
       flintlock_version:
         type: "string"
         required: false
-        default: "latest"
       capmvm_version:
         type: "string"
         required: false
@@ -65,7 +64,7 @@ jobs:
       if: ${{ success() }}
       with:
         slack_token: ${{ secrets.SLACK_TOKEN }}
-        message: "A Liquid Metal e2e test run succeeded :party-keanu:"
+        message: "A Liquid Metal Acceptance Test run succeeded :party-keanu:"
         channel: team-quick-silver
         color: green
         verbose: false

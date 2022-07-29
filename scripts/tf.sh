@@ -34,7 +34,7 @@ new_vars() {
 		--arg metro "$metro" \
 		--arg device "$device" \
 		--arg host_device_count "$device_count" \
-		--arg fl_version "v${flintlock_version//v/}" \
+		--arg fl_version "$flintlock_version" \
 		--arg prj_name "$project_name" \
 		'.org_id = $org |
 		.metal_auth_token = $token |
