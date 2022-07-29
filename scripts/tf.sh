@@ -21,7 +21,8 @@ new_vars() {
 	# # put the count back afterwards
 	((device_count--))
 
-	rm keys/* && ssh-keygen -q -f "$key" -t ed25519 -N ""
+	rm keys/* || true
+	ssh-keygen -q -f "$key" -t ed25519 -N ""
 	public_key=$(cat $key.pub)
 	private_key_path="$(dirname "$dir")/$key"
 
