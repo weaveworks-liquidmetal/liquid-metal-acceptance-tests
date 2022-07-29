@@ -16,9 +16,11 @@ on:
       capmvm_repo:
         type: "string"
         required: false
+        default: "https://github.com/Callisto13/cluster-api-provider-microvm"
       capmvm_branch:
         type: "string"
         required: false
+        default: "e2e"
   schedule:
     - cron: 0 0 * * *
 
