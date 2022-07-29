@@ -43,21 +43,18 @@ jobs:
         METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
         METAL_ORG_ID: ${{ secrets.EQUINIX_ORG_ID }}
         FLINTLOCK_VERSION: ${{ inputs.flintlock_version }}
-        CAPMVM_VERSION: ${{ inputs.capmvm_version }}
-        CAPMVM_REPO: ${{ inputs.capmvm_repo }}
-        CAPMVM_BRANCH: ${{ inputs.capmvm_branch }}
       run: |
-        make all E2E_ARGS="--version $CAPMVM_VERSION --repo $CAPMVM_REPO --branch $CAPMVM_BRANCH"
+        make all E2E_ARGS="--version ${{ inputs.capmvm_version }} --repo ${{ inputs.capmvm_repo }} --branch ${{ inputs.capmvm_branch }}"
 
-    - name: Notify slack on failure
-      uses: actions-ecosystem/action-slack-notifier@fc778468d09c43a6f4d1b8cccaca59766656996a
-      if: ${{ failure() }}
-      with:
-        slack_token: ${{ secrets.SLACK_TOKEN }}
-        message: "A Liquid Metal e2e test run failed :blob_sad: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here> and weep."
-        channel: team-quick-silver
-        color: red
-        verbose: false
+    # - name: Notify slack on failure
+    #   uses: actions-ecosystem/action-slack-notifier@fc778468d09c43a6f4d1b8cccaca59766656996a
+    #   if: ${{ failure() }}
+    #   with:
+    #     slack_token: ${{ secrets.SLACK_TOKEN }}
+    #     message: "A Liquid Metal e2e test run failed :blob_sad: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here> and weep."
+    #     channel: team-quick-silver
+    #     color: red
+    #     verbose: false
 
     - name: Notify slack on success
       uses: actions-ecosystem/action-slack-notifier@fc778468d09c43a6f4d1b8cccaca59766656996a
