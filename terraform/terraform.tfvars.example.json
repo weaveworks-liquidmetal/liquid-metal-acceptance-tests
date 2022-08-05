@@ -1,0 +1,10 @@
+{
+  "project_name": "liquid-metal-acceptance-tests",
+  "org_id": "REPLACE_ORG_ID",
+  "metal_auth_token": "REPLACE_AUTH_TOKEN",
+  "public_key": "REPLACE_PUBLIC_KEY_CONTENTS",
+  "private_key_path": "REPLACE_PRIVATE_KEY_PATH",
+  "metro": "REPLACE_METRO",
+  "flintlock_version": "latest",
+  "firecracker_version": "v0.25.2-macvtap"
+}
