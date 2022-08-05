@@ -1,0 +1,68 @@
+name: nightly_e2e
+
+on:
+  workflow_dispatch:
+    inputs:
+      flintlock_version:
+        type: "string"
+        required: false
+      capmvm_version:
+        type: "string"
+        required: false
+      capmvm_repo:
+        type: "string"
+        required: false
+      capmvm_branch:
+        type: "string"
+        required: false
+  schedule:
+    - cron: 0 1 * * *
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_NAME: "liquid-metal-acceptance-tests"
+    name: e2e tests
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.2.5
+
+    - name: Run tests
+      env:
+        PROJECT_NAME: ${{ env.PROJECT_NAME }}
+        METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
+        METAL_ORG_ID: ${{ secrets.EQUINIX_ORG_ID }}
+        FLINTLOCK_VERSION: ${{ inputs.flintlock_version }}
+      run: |
+        make all E2E_ARGS="--version ${{ inputs.capmvm_version }} --repo ${{ inputs.capmvm_repo }} --branch ${{ inputs.capmvm_branch }}"
+
+    - name: Notify slack on failure
+      uses: actions-ecosystem/action-slack-notifier@fc778468d09c43a6f4d1b8cccaca59766656996a
+      if: ${{ failure() }}
+      with:
+        slack_token: ${{ secrets.SLACK_TOKEN }}
+        message: "A Liquid Metal Acceptance Test run failed :blob_sad: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here> and weep."
+        channel: team-quick-silver
+        color: red
+        verbose: false
+
+    - name: Notify slack on success
+      uses: actions-ecosystem/action-slack-notifier@fc778468d09c43a6f4d1b8cccaca59766656996a
+      if: ${{ success() }}
+      with:
+        slack_token: ${{ secrets.SLACK_TOKEN }}
+        message: "A Liquid Metal Acceptance Test run succeeded :party-keanu:"
+        channel: team-quick-silver
+        color: green
+        verbose: false
+
+    - name: Cleanup project
+      if: ${{ failure() }}
+      uses: weaveworks/metal-janitor-action@27a0594c5c92d85585b553fc0c5ef2a3de7bec95
+      with:
+        metal_auth_token: ${{ secrets.METAL_AUTH_TOKEN }}
+        project_names: ${{ env.PROJECT_NAME }}
