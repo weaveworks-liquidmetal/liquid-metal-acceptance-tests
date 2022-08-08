@@ -41,6 +41,12 @@ variable "server_type" {
   }
 }
 
+variable "os" {
+  description = "Operating system to install on devices"
+  type        = string
+  default     = "ubuntu_20_04"
+}
+
 variable "host_device_count" {
   description = "number of flintlock hosts to create"
   type        = number
@@ -109,9 +115,9 @@ resource "metal_device" "management_cluster" {
   hostname            = "management-cluster"
   plan                = var.server_type
   metro               = var.metro
-  operating_system    = "ubuntu_20_04"
+  operating_system    = var.os
   billing_cycle       = "hourly"
-  user_data           = "#!/bin/bash\ncurl -s https://raw.githubusercontent.com/masters-of-cats/a-new-hope/main/install.sh | bash -s"
+  user_data           = "#!/bin/bash\ncurl -s https://raw.githubusercontent.com/warehouse-13/a-new-hope/main/install.sh | bash -s"
   project_ssh_key_ids = [metal_project_ssh_key.demo_key.id]
   project_id          = metal_project.liquid_metal_demo.id
 }
@@ -130,9 +136,9 @@ resource "metal_device" "host" {
   hostname            = "host-${count.index}"
   plan                = var.server_type
   metro               = var.metro
-  operating_system    = "ubuntu_20_04"
+  operating_system    = var.os
   billing_cycle       = "hourly"
-  user_data           = "#!/bin/bash\ncurl -s https://raw.githubusercontent.com/masters-of-cats/a-new-hope/main/install.sh | bash -s"
+  user_data           = "#!/bin/bash\ncurl -s https://raw.githubusercontent.com/warehouse-13/a-new-hope/main/install.sh | bash -s"
   project_ssh_key_ids = [metal_project_ssh_key.demo_key.id]
   project_id          = metal_project.liquid_metal_demo.id
 }
