@@ -1,60 +1,39 @@
-terraform {
-  required_providers {
-    metal = {
-      version = "~> 3.2.2"
-      source  = "equinix/metal"
-    }
-  }
+module "create_devices" {
+  source  = "weaveworks-liquidmetal/liquidmetal/equinix"
+  version = "0.0.2"
+
+  project_name = var.project_name
+  public_key = var.public_key
+  org_id = var.org_id
+  metal_auth_token = var.metal_auth_token
+  microvm_host_device_count = var.microvm_host_device_count
+  # metro = "fr"
+  # server_type = "c3.small.x86"
+  # operating_system = "ubuntu_20_04"
 }
 
-## VARIABLES
+module "provision_hosts" {
+  source  = "weaveworks-liquidmetal/liquidmetal/equinix//modules/provision-lmats"
+  version = "0.0.2"
 
+  private_key_path = var.private_key_path
+  vlan_id = module.create_devices.vlan_id
+  network_hub_address = module.create_devices.network_hub_ip
+  microvm_host_addresses = module.create_devices.microvm_host_ips
+  microvm_host_device_count = var.microvm_host_device_count
+  # flintlock_version = "latest"
+  # firecracker_version = "latest"
+}
+
+# required variables pulled from terraform.tfvars.json
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "liquid-metal-acceptance-tests"
 }
 
 variable "org_id" {
   description = "Org id"
   type        = string
-}
-
-variable "metro" {
-  description = "Metro to create resources in"
-  type        = string
-  default     = "am"
-}
-
-variable "server_type" {
-  description = "The type/plan to use for devices"
-  type        = string
-  default     = "c3.small.x86"
-  validation {
-    condition = contains([
-      "c3.small.x86",
-      "m3.small.x86",
-      "c3.medium.x86",
-      ],
-    var.server_type)
-    error_message = "Disallowed instance type."
-  }
-}
-
-variable "os" {
-  description = "Operating system to install on devices"
-  type        = string
-  default     = "ubuntu_20_04"
-}
-
-variable "host_device_count" {
-  description = "number of flintlock hosts to create"
-  type        = number
-  default     = 2
-  validation {
-    condition     = var.host_device_count <= 3
-    error_message = "Too many hosts requested."
-  }
 }
 
 variable "metal_auth_token" {
@@ -66,164 +45,28 @@ variable "metal_auth_token" {
 variable "public_key" {
   description = "public key to add to hosts"
   type        = string
-  sensitive   = true
 }
 
 variable "private_key_path" {
   description = "the path to the private key to use for SSH"
   type        = string
+  sensitive   = true
 }
 
-variable "flintlock_version" {
-  description = "the version of flintlock to provision hosts with (default: latest)"
-  type        = string
+# optional variables with defaults
+variable "microvm_host_device_count" {
+  description = "The number of devices to provision as flintlock hosts."
+  type        = number
+  default     = 2
 }
 
-variable "firecracker_version" {
-  description = "the version of firecracker to provision hosts with (default: latest)"
-  type        = string
+# outputs used by tests do not rename
+output "management_ip" {
+  value = module.create_devices.network_hub_ip
+  description = "The address of the device created to act as a networking and management hub"
 }
 
-## THE JUICE
-
-provider "metal" {
-  auth_token = var.metal_auth_token
-}
-
-# Create new project
-resource "metal_project" "liquid_metal_demo" {
-  name            = var.project_name
-  organization_id = var.org_id
-}
-
-# Add SSH key
-resource "metal_project_ssh_key" "demo_key" {
-  name       = "liquid-metal-demo-key"
-  public_key = var.public_key
-  project_id = metal_project.liquid_metal_demo.id
-}
-
-# Create VLAN in project
-resource "metal_vlan" "vlan" {
-  description = "VLAN for liquid-metal-demo"
-  metro       = var.metro
-  project_id  = metal_project.liquid_metal_demo.id
-}
-
-# Create device for dhcp, nat routing, management cluster etc
-resource "metal_device" "management_cluster" {
-  hostname            = "management-cluster"
-  plan                = var.server_type
-  metro               = var.metro
-  operating_system    = var.os
-  billing_cycle       = "hourly"
-  user_data           = "#!/bin/bash\ncurl -s https://raw.githubusercontent.com/warehouse-13/a-new-hope/main/install.sh | bash -s"
-  project_ssh_key_ids = [metal_project_ssh_key.demo_key.id]
-  project_id          = metal_project.liquid_metal_demo.id
-}
-
-# Update the dhcp device networking to be Hybrid-Bonded with VLAN attached
-resource "metal_port" "bond0_dhcp" {
-  port_id  = [for p in metal_device.management_cluster.ports : p.id if p.name == "bond0"][0]
-  layer2   = false
-  bonded   = true
-  vlan_ids = [metal_vlan.vlan.id]
-}
-
-# Create N devices to act as flintlock hosts
-resource "metal_device" "host" {
-  count               = var.host_device_count
-  hostname            = "host-${count.index}"
-  plan                = var.server_type
-  metro               = var.metro
-  operating_system    = var.os
-  billing_cycle       = "hourly"
-  user_data           = "#!/bin/bash\ncurl -s https://raw.githubusercontent.com/warehouse-13/a-new-hope/main/install.sh | bash -s"
-  project_ssh_key_ids = [metal_project_ssh_key.demo_key.id]
-  project_id          = metal_project.liquid_metal_demo.id
-}
-
-# Update the host devices' networking to be Hybrid-Bonded with VLAN attached
-resource "metal_port" "bond0_host" {
-  count    = var.host_device_count
-  port_id  = [for p in metal_device.host[count.index].ports : p.id if p.name == "bond0"][0]
-  layer2   = false
-  bonded   = true
-  vlan_ids = [metal_vlan.vlan.id]
-}
-
-# Set up the vlan, dhcp server, nat routing and various tools required by the
-# tests on the management_cluster device
-resource "null_resource" "setup_management_cluster" {
-  connection {
-    type        = "ssh"
-    host        = metal_device.management_cluster.network.0.address
-    user        = "root"
-    port        = 22
-    private_key = file(var.private_key_path)
-  }
-
-  provisioner "file" {
-    source      = "files/vlan.sh"
-    destination = "/root/vlan.sh"
-  }
-
-  provisioner "file" {
-    source      = "files/dhcp.sh"
-    destination = "/root/dhcp.sh"
-  }
-
-  provisioner "file" {
-    source      = "files/nat.sh"
-    destination = "/root/nat.sh"
-  }
-
-  provisioner "file" {
-    source      = "files/installables.sh"
-    destination = "/root/installables.sh"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /root/vlan.sh",
-      "chmod +x /root/dhcp.sh",
-      "chmod +x /root/nat.sh",
-      "chmod +x /root/installables.sh",
-      "VLAN_ID=${metal_vlan.vlan.vxlan} ADDR=2 /root/vlan.sh",
-      "VLAN_ID=${metal_vlan.vlan.vxlan} /root/dhcp.sh",
-      "VLAN_ID=${metal_vlan.vlan.vxlan} /root/nat.sh",
-      "/root/installables.sh",
-    ]
-  }
-}
-
-# Set up the vlan and configure flintlock on the hosts
-resource "null_resource" "setup_hosts" {
-  count = var.host_device_count
-  connection {
-    type        = "ssh"
-    host        = metal_device.host[count.index].network.0.address
-    user        = "root"
-    port        = 22
-    private_key = file(var.private_key_path)
-  }
-
-  provisioner "file" {
-    source      = "files/vlan.sh"
-    destination = "/root/vlan.sh"
-  }
-
-  provisioner "file" {
-    source      = "files/flintlock.sh"
-    destination = "/root/flintlock.sh"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /root/vlan.sh",
-      "chmod +x /root/flintlock.sh",
-      "VLAN_ID=${metal_vlan.vlan.vxlan} ADDR=${count.index + 3} /root/vlan.sh",
-      "VLAN_ID=${metal_vlan.vlan.vxlan} FLINTLOCK=${var.flintlock_version} FIRECRACKER=${var.firecracker_version} /root/flintlock.sh",
-    ]
-  }
+output "microvm_host_ips" {
+  value = module.create_devices.microvm_host_ips
+  description = "The addresses of the devices provisioned as flintlock microvm hosts"
 }

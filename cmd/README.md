@@ -35,7 +35,7 @@ the Equinix machines.
 The sequence of events is as follows:
 - The tool is built and called from the Makefile (`make e2e`)
 - It processes and validates any given flags
-- It parses the `../terraform/terraform.tfstate` file for the `outputs.host_ips`
+- It parses the `../terraform/terraform.tfstate` file for the `outputs.microvm_host_ips`
   and `outputs.management_ip`
 - The `host_ips` are formatted ready for use as flintlock addresses by the tests
 - The command to run over SSH is built from `e2e.sh` template

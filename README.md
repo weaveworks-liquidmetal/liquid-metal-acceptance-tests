@@ -34,7 +34,7 @@ The test code itself for now lives in [CAPMVM][capmvm-e2e].
 
 There are 2 main parts to this repo:
 - [`terraform/`][tf] which contains manifests for provisioning bare-metal infrastructure
-   and configuring flintlock.
+   and configuring flintlock using the [Liquid Metal Equinix module][tf-mod].
 - [`cmd/`][tool] which triggers the execution of the tests.
 
 The sequence of events for a full run is:
@@ -82,6 +82,13 @@ change into this repo:
 ```bash
 git clone https://github.com/weaveworks-liquidmetal/liquid-metal-acceptance-tests
 cd liquid-metal-acceptance-tests
+```
+
+Install some python reqs:
+
+```bash
+cd scripts
+pip3 install -r requirements.txt
 ```
 
 Set the required environment variables:
@@ -168,6 +175,13 @@ git clone https://github.com/weaveworks-liquidmetal/liquid-metal-acceptance-test
 cd liquid-metal-acceptance-tests
 ```
 
+Install some python reqs:
+
+```bash
+cd scripts
+pip3 install -r requirements.txt
+```
+
 Set the required environment variables:
 
 ```bash
@@ -230,8 +244,9 @@ I will be exposing an option to keep things around if needed.
 
 [flintlock]: https://github.com/weaveworks-liquidmetal/flintlock
 [capmvm]: https://github.com/weaveworks-liquidmetal/cluster-api-provider-microvm
-[capmvm-e2e]: https://github.com/weaveworks-liquidmetal/cluster-api-provider-microvm/test/e2e
+[capmvm-e2e]: https://github.com/weaveworks-liquidmetal/cluster-api-provider-microvm/tree/main/test/e2e
 [flintlock-releases]: https://github.com/weaveworks-liquidmetal/flintlock/releases
 [tool]: /cmd
 [tf]: /terraform
 [actions]: https://github.com/weaveworks-liquidmetal/liquid-metal-acceptance-tests/main/workflows/nightly_e2e.yml
+[tf-mod]: https://registry.terraform.io/modules/weaveworks-liquidmetal/liquidmetal/equinix/latest

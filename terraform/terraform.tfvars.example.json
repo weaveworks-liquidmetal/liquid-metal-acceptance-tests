@@ -6,5 +6,5 @@
   "private_key_path": "REPLACE_PRIVATE_KEY_PATH",
   "metro": "REPLACE_METRO",
   "flintlock_version": "latest",
-  "firecracker_version": "v0.25.2-macvtap"
+  "firecracker_version": "latest"
 }

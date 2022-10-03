@@ -14,8 +14,8 @@ type State struct {
 }
 
 type OutInfo struct {
-	ManagementIp StringValue      `json:"management_cluster_ip"`
-	HostIps      StringSliceValue `json:"host_ips"`
+	ManagementIp StringValue      `json:"network_hub_ip"`
+	HostIps      StringSliceValue `json:"microvm_host_ips"`
 }
 
 type StringValue struct {

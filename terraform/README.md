@@ -1,7 +1,8 @@
 # Terraform
 
-This dir hold the terraform scripts and manifests to provision the infrastructure
-used by the Liquid Metal Acceptance Tests.
+This dir holds the terraform manifests to provision the infrastructure
+used by the Liquid Metal Acceptance Tests. It uses the liquidmetal equinix terraform
+module which can be found [here][tf-mod].
 
 > Note: there is some duplication between this terraform setup and the one I use
 for demos. I am refactoring both to use common modules.
@@ -90,3 +91,5 @@ Flintlock hosts:
 The down command will remove everything. If the bond port is deleted before the
 devices have actually come down it may fail, so just call `make tf-down` a second
 time and it will clear it.
+
+[tf-mod]: https://registry.terraform.io/modules/weaveworks-liquidmetal/liquidmetal/equinix/latest
