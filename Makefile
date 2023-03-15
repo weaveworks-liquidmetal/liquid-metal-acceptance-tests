@@ -16,15 +16,15 @@ tf-vars:
 
 .PHONY: tf-up
 tf-up: pip-deps tf-vars
-	./scripts/tf.sh -u || exit 1
+	./scripts/tf.sh -u
 
 .PHONY: tf-down
 tf-down:
-	./scripts/tf.sh -d || exit 1
+	./scripts/tf.sh -d
 
 .PHONY: e2e
 e2e: build-e2e
-	$(E2E) $(E2E_ARGS) || exit 1
+	$(E2E) $(E2E_ARGS)
 
 .PHONY: build-e2e
 build-e2e:

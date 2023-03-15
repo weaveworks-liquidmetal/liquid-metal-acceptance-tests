@@ -31,7 +31,7 @@ jobs:
       with:
         terraform_version: 1.3.1
 
-    - name: Run tests
+    - name: Create infra
       env:
         PROJECT_NAME: ${{ env.PROJECT_NAME }}
         METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
@@ -39,28 +39,45 @@ jobs:
         FLINTLOCK_VERSION: ${{ inputs.flintlock_version }}
       run: |
         make tf-up
+
+    - name: Run tests
+      run: |
         make e2e E2E_ARGS="--version \"${{ inputs.capmvm_version }}\" --repo \"${{ inputs.capmvm_repo }}\" --branch \"${{ inputs.capmvm_branch }}\""
-        make tf-down
 
-    - name: Notify slack on failure
-      uses: actions-ecosystem/action-slack-notifier@fc778468d09c43a6f4d1b8cccaca59766656996a
+    - name: On failure
       if: ${{ failure() }}
-      with:
-        slack_token: ${{ secrets.SLACK_TOKEN }}
-        message: "A Liquid Metal Acceptance Test run failed :blob_sad: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here> and weep."
-        channel: team-quick-silver
-        color: red
-        verbose: false
+      run: echo "failure slack message"
 
-    - name: Notify slack on success
-      uses: actions-ecosystem/action-slack-notifier@fc778468d09c43a6f4d1b8cccaca59766656996a
+    - name: On success
       if: ${{ success() }}
-      with:
-        slack_token: ${{ secrets.SLACK_TOKEN }}
-        message: "A Liquid Metal Acceptance Test run succeeded :party-keanu:"
-        channel: team-quick-silver
-        color: green
-        verbose: false
+      run: echo "success slack message"
+
+    # - name: Notify slack on test failure
+    #   uses: actions-ecosystem/action-slack-notifier@fc778468d09c43a6f4d1b8cccaca59766656996a
+    #   if: ${{ failure() }}
+    #   with:
+    #     slack_token: ${{ secrets.SLACK_TOKEN }}
+    #     message: "A Liquid Metal Acceptance Test run failed :blob_sad: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here> and weep."
+    #     channel: team-quick-silver
+    #     color: red
+    #     verbose: false
+
+    # - name: Notify slack on test success
+    #   uses: actions-ecosystem/action-slack-notifier@fc778468d09c43a6f4d1b8cccaca59766656996a
+    #   if: ${{ success() }}
+    #   with:
+    #     slack_token: ${{ secrets.SLACK_TOKEN }}
+    #     message: "A Liquid Metal Acceptance Test run succeeded :party-keanu:"
+    #     channel: team-quick-silver
+    #     color: green
+    #     verbose: false
+
+    - name: Teardown
+      env:
+        METAL_ORG_ID: ${{ secrets.EQUINIX_ORG_ID }}
+        METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
+      run: |
+        make tf-down
 
     - name: Cleanup project
       if: ${{ failure() }}
