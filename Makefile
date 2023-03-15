@@ -15,7 +15,7 @@ tf-vars:
 	./scripts/tf.sh -v
 
 .PHONY: tf-up
-tf-up: tf-vars
+tf-up: pip-deps tf-vars
 	./scripts/tf.sh -u || exit 1
 
 .PHONY: tf-down

@@ -14,7 +14,7 @@ type State struct {
 }
 
 type OutInfo struct {
-	ManagementIp StringValue      `json:"network_hub_ip"`
+	ManagementIp StringValue      `json:"management_ip"`
 	HostIps      StringSliceValue `json:"microvm_host_ips"`
 }
 
@@ -26,6 +26,30 @@ type StringSliceValue struct {
 	Value []string `json:"value"`
 }
 
+// GetOutputs will parse the terraform/terraform.tfstate for the addresses of
+// the management device and the flintlockd host devices. It assumes data which
+// looks like:
+// {
+//   "outputs": {
+//     "management_ip": {
+//       "value": "145.40.97.207",
+//       "type": "string"
+//     },
+//     "microvm_host_ips": {
+//       "value": [
+//         "145.40.97.203",
+//         "145.40.97.129"
+//       ],
+//       "type": [
+//         "tuple",
+//         [
+//           "string",
+//           "string"
+//         ]
+//       ]
+//     }
+//   },
+// }
 func GetOutputs(stateFile string) (string, []string, error) {
 	dat, err := ioutil.ReadFile(stateFile)
 	if err != nil {

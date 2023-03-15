@@ -41,7 +41,7 @@ new_vars() {
 		.public_key = $pub_key |
 		.private_key_path = $priv_key |
 		.metro = $metro |
-		.host_device_count = $host_device_count |
+		.microvm_host_device_count = $host_device_count |
 		.flintlock_version = $fl_version |
 		.project_name = $prj_name |
 		.server_type = $device' \
