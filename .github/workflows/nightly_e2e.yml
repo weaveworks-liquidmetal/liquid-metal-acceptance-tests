@@ -45,6 +45,7 @@ jobs:
         make e2e E2E_ARGS="--version \"${{ inputs.capmvm_version }}\" --repo \"${{ inputs.capmvm_repo }}\" --branch \"${{ inputs.capmvm_branch }}\""
 
     - name: Teardown
+      if: ${{ always() }}
       env:
         METAL_ORG_ID: ${{ secrets.EQUINIX_ORG_ID }}
         METAL_AUTH_TOKEN: ${{ secrets.METAL_AUTH_TOKEN }}
