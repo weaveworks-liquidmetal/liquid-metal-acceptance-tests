@@ -19,8 +19,8 @@ on:
         description: "CAPMVM branch, eg. my-test-branch"
         type: "string"
         required: false
-  schedule:
-    - cron: 0 1 * * 1
+#  schedule:
+#    - cron: 0 1 * * 1
 
 jobs:
   e2e:
